@@ -3049,12 +3049,12 @@
 
 
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Terminal, Download, Trash2, Play, Highlighter, Send, 
-  AlertCircle, Zap, Activity, Command, Copy, Plus, X, 
-  Pause, Edit2, Save, Plug, Search, Usb, Filter, 
-  ChevronDown, Check, ShieldCheck, Languages, Cpu, List, Monitor,
-  PlayCircle, ChevronRight, Settings2
+import {
+  Terminal, Download, Trash2, Play, Highlighter, Send,
+  Zap, Activity, Command, Copy, Plus, X,
+  Pause, Edit2, Save, Plug, Search, Usb, Filter,
+  ChevronDown, Check, ShieldCheck, List, Monitor,
+  ChevronRight
 } from 'lucide-react';
 
 // --- Utility: CRC16 Modbus Calculation ---
@@ -3103,7 +3103,7 @@ export default function App() {
   // Buffering Logic
   const rxBufferRef = useRef('');
   const rxTimeoutRef = useRef(null);
-  const logContainerRef = useRef(null); // Ref for log scroll container
+  const logContainerRef = useRef(null); 
 
   // Interaction States
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
@@ -3332,11 +3332,14 @@ export default function App() {
     );
   };
 
-  // Fixed Auto-Scroll without shifting page
+  // Fixed Auto-Scroll logic to prevent overall container jumping
   useEffect(() => {
     if (autoScroll && logContainerRef.current && !logFilter) {
       const container = logContainerRef.current;
-      container.scrollTop = container.scrollHeight;
+      // Use direct scrollTop manipulation to avoid browser's "centering" scroll behavior
+      requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight;
+      });
     }
   }, [logs, autoScroll, logFilter]);
 
@@ -3365,7 +3368,7 @@ export default function App() {
          <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
       </div>
 
-      {/* Main Window */}
+      {/* Main Window - Strictly Fixed Height Container */}
       <div className="relative w-[75vw] h-[72vh] max-w-[960px] max-h-[640px] flex flex-col animate-in fade-in zoom-in-95 duration-700 
         shadow-[0_0_80px_-20px_rgba(16,185,129,0.2),0_40px_100px_-20px_rgba(0,0,0,1)] 
         rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur-3xl overflow-hidden ring-1 ring-white/10">
@@ -3390,7 +3393,6 @@ export default function App() {
           {/* Main Log Area */}
           <main className="flex-1 flex flex-col min-w-0 relative bg-black/5">
             
-            {/* Top Toolbar */}
             <div className="absolute top-2.5 left-4 z-20 flex items-center gap-3 px-3 py-1.5 pr-5 rounded-full border border-white/10 backdrop-blur-md bg-zinc-900/80 shadow-xl ring-1 ring-white/5 scale-90 origin-left">
               <div className={`size-6 rounded-full flex items-center justify-center transition-all ${isConnected ? 'bg-emerald-500 text-black shadow-[0_0:15px_rgba(16,185,129,0.5)]' : 'bg-zinc-800 text-zinc-500'}`}>
                 {isConnected ? <Activity size={12} className="animate-pulse" /> : <Zap size={12} />}
@@ -3403,7 +3405,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* View Controls */}
             <div className="absolute top-2.5 right-4 z-20 flex items-center gap-2 scale-90 origin-right">
                 <div className="relative group">
                     <Filter size={12} className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${logFilter ? 'text-emerald-400' : 'text-zinc-500'}`} />
@@ -3420,11 +3421,43 @@ export default function App() {
                         <button onClick={() => setEncoding('gbk')} className={`w-15 py-1 rounded-full text-[10px] font-black tracking-wider transition-all ${encoding === 'gbk' ? 'bg-emerald-600/30 text-emerald-400 border border-emerald-500/20 shadow-inner' : 'text-zinc-500 hover:text-zinc-300'}`}>GBK</button>
                     </div>
                 </div>
-                <button onClick={() => setLogs([])} className="size-8 rounded-full flex items-center justify-center bg-black/60 border border-white/10 text-zinc-400 hover:text-rose-400 transition-all shadow-lg"><Trash2 size={14} /></button>
+                {isConnected && (
+                  <button
+                    onClick={() => setIsPaused(!isPaused)}
+                    className={`size-8 rounded-full flex items-center justify-center border transition-all shadow-lg ${isPaused ? 'bg-amber-500 text-black border-amber-400 shadow-amber-500/30' : 'bg-black/60 border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'}`}
+                    title={isPaused ? "Resume" : "Pause"}
+                  >
+                    {isPaused ? <Play size={14} fill="currentColor" /> : <Pause size={14} fill="currentColor" />}
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    const content = logs.map(l => `[${l.timestamp}] ${l.type === 'tx' ? 'TX' : 'RX'}: ${l.text}`).join('\n');
+                    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `serial_log_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.txt`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                  }}
+                  disabled={logs.length === 0}
+                  className="size-8 rounded-full flex items-center justify-center bg-black/60 border border-white/10 text-zinc-400 hover:text-emerald-400 transition-all shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                  title="Download Log"
+                >
+                  <Download size={14} />
+                </button>
+                <button onClick={() => setLogs([])} className="size-8 rounded-full flex items-center justify-center bg-black/60 border border-white/10 text-zinc-400 hover:text-rose-400 transition-all shadow-lg" title="Clear Log"><Trash2 size={14} /></button>
             </div>
 
-            {/* Terminal Feed */}
-            <div ref={logContainerRef} className="flex-1 pt-14 pb-2 px-5 overflow-y-auto custom-scrollbar font-mono text-[13px] leading-relaxed">
+            {/* Scrollable Container with explicit Ref and Style */}
+            <div 
+              ref={logContainerRef} 
+              className="flex-1 pt-14 pb-2 px-5 overflow-y-auto custom-scrollbar font-mono text-[13px] leading-relaxed relative"
+              style={{ overflowAnchor: 'none' }} 
+            >
               {logs.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center opacity-20 select-none transition-all">
                     <Terminal size={56} className="text-emerald-400 mb-4 drop-shadow-[0_0_10px_rgba(52,211,153,0.3)]" strokeWidth={1.5} />
@@ -3433,11 +3466,10 @@ export default function App() {
               ) : (
                 <div className="space-y-0.5">
                   {logs.filter(l => !logFilter || String(l.text).toLowerCase().includes(logFilter.toLowerCase())).map((log) => (
-                    <div key={log.id} onClick={() => { navigator.clipboard.writeText(String(log.text)); setCopyFeedback("COPIED!"); setTimeout(()=>setCopyFeedback(null), 1000); }} className="flex hover:bg-white/[0.04] -mx-4 px-4 py-0.5 rounded cursor-pointer group transition-colors border border-transparent">
-                      <span className="text-[10px] text-zinc-600 shrink-0 font-sans pt-1 select-none opacity-40 min-w-[70px]">{log.timestamp}</span>
+                    <div key={log.id} onClick={() => { navigator.clipboard.writeText(String(log.text)); setCopyFeedback("COPIED!"); setTimeout(()=>setCopyFeedback(null), 1000); }} className="flex items-start gap-2 hover:bg-white/[0.04] -mx-4 px-4 py-0.5 rounded cursor-pointer group transition-colors border border-transparent">
+                      <span className="text-[10px] text-zinc-600 shrink-0 font-mono select-none opacity-50 tabular-nums">{log.timestamp}</span>
+                      <span className={`shrink-0 text-[10px] font-black px-1.5 rounded-sm border min-w-[22px] text-center ${log.type === 'tx' ? 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20 shadow-[0_0_5px_rgba(34,211,238,0.1)]' : 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_5px_rgba(52,211,153,0.2)]'}`}>{log.type === 'tx' ? 'TX' : 'RX'}</span>
                       <div className={`flex-1 break-all ${log.type === 'tx' ? 'text-zinc-400 italic' : 'text-emerald-300 font-medium'}`}>
-                        {log.type === 'tx' && <span className="inline-block text-emerald-400/80 mr-2 text-[10px] font-black opacity-80 bg-emerald-500/10 px-1.5 rounded-sm border border-emerald-500/20 min-w-[22px] text-center not-italic shadow-[0_0_5px_rgba(16,185,129,0.1)]">TX</span>}
-                        {log.type === 'rx' && <span className="inline-block text-emerald-500 mr-2 text-[10px] font-black opacity-80 bg-emerald-500/10 px-1.5 rounded-sm border border-emerald-500/20 min-w-[22px] text-center shadow-[0_0_5px_rgba(52,211,153,0.2)]">RX</span>}
                         {renderContent(log.text)}
                       </div>
                     </div>
@@ -3446,7 +3478,6 @@ export default function App() {
               )}
             </div>
 
-            {/* Status Footer */}
             <div className="h-8 flex items-center justify-between px-5 text-[10px] text-zinc-500 select-none border-t border-white/5 bg-black/40">
                 <div className="flex items-center gap-8 font-black uppercase tracking-tight opacity-70">
                     <span className="flex items-center gap-3"><span className={`size-1.5 rounded-full transition-all duration-200 ${Date.now() - lastActivity.time < 100 && lastActivity.type === 'rx' ? 'bg-emerald-400 shadow-[0_0:12px_rgba(52,211,153,1)] scale-110' : 'bg-emerald-950'}`}></span> RX: {logs.filter(l => l.type === 'rx').length}</span>
@@ -3460,10 +3491,8 @@ export default function App() {
             </div>
           </main>
 
-          {/* Right Sidebar - Compact 240px */}
           <aside className="w-[240px] bg-[#0a0a0c] border-l border-white/10 flex flex-col z-20 relative p-3.5 space-y-3.5 overflow-y-auto custom-scrollbar shadow-[-10px_0:30px_rgba(0,0,0,0.5)]">
             
-            {/* Session Card */}
             <div className="bg-zinc-900/40 border border-white/10 rounded-xl p-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
                 <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2"><Plug size={12} className="text-emerald-400" /> Session</h3>
                 <div className="space-y-2.5">
@@ -3489,13 +3518,11 @@ export default function App() {
                 </div>
             </div>
 
-            {/* Macros Card */}
             <div className="bg-zinc-900/40 border border-white/10 rounded-xl p-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
                  <div className="flex items-center justify-between mb-3">
                     <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] flex items-center gap-2"><List size={12} className="text-emerald-400" /> Macros</h3>
                     <button onClick={() => setIsEditingCmds(!isEditingCmds)} className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 transition-all border border-white/5 shadow-sm">{isEditingCmds ? <Save size={12} /> : <Edit2 size={12} />}</button>
                  </div>
-                 
                  <div className="space-y-2">
                  {isEditingCmds ? (
                    <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
@@ -3531,7 +3558,6 @@ export default function App() {
                  </div>
             </div>
 
-            {/* Highlighter Card */}
             <div className="bg-zinc-900/40 border border-white/10 rounded-xl p-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
                 <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2.5 flex items-center gap-2"><Highlighter size={12} className="text-emerald-400" /> Highlighting</h3>
                 <div className="space-y-3">
@@ -3548,12 +3574,11 @@ export default function App() {
                 </div>
             </div>
 
-            {/* Transmitter Section - Optimized Layout */}
             <div className="mt-auto space-y-2 border-t border-white/10 pt-3">
                 <div className="flex items-center justify-between px-1">
                     <div className="flex gap-2">
-                        <button onClick={() => setAppendCRC(!appendCRC)} className={`px-2 py-0.5 rounded border text-[8px] font-black transition-all ${appendCRC ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-white/5 text-zinc-600 border-white/5'}`}>CRC16</button>
-                        <button onClick={() => setUseHexSend(!useHexSend)} className={`px-2 py-0.5 rounded border text-[8px] font-black transition-all ${useHexSend ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-white/5 text-zinc-600 border-white/5'}`}>HEX</button>
+                        <button onClick={() => setAppendCRC(!appendCRC)} className={`px-2 py-0.5 rounded border text-[8px] font-black transition-all ${appendCRC ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-white/5 text-zinc-600 border-white/5'}`}>CRC16</button>
+                        <button onClick={() => setUseHexSend(!useHexSend)} className={`px-2 py-0.5 rounded border text-[8px] font-black transition-all ${useHexSend ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-white/5 text-zinc-600 border-white/5'}`}>HEX</button>
                     </div>
                     <div className="flex bg-black/40 border border-white/5 rounded overflow-hidden">
                         {[ {label:'\\n', val:'\\n'}, {label:'Ø', val:'none'} ].map(opt => (
@@ -3561,7 +3586,6 @@ export default function App() {
                         ))}
                     </div>
                 </div>
-                
                 <div className="relative group">
                     <textarea 
                         value={inputText} 
@@ -3571,11 +3595,10 @@ export default function App() {
                         className="w-full h-32 bg-black/60 border border-white/10 rounded-xl p-3 text-[12px] font-mono focus:outline-none focus:border-emerald-500/40 transition-all resize-none placeholder:opacity-20 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] text-emerald-100" 
                     />
                 </div>
-
                 <button 
                   onClick={() => sendData()} 
                   disabled={!isConnected} 
-                  className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:from-zinc-800 disabled:to-zinc-800 disabled:text-zinc-600 text-white text-[10px] font-black tracking-[0.3em] rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2.5 active:scale-95 group"
+                  className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:from-zinc-800 disabled:to-zinc-800 disabled:text-zinc-600 text-white text-[10px] font-black tracking-[0.3em] rounded-xl transition-all shadow-lg shadow-emerald-900/20 disabled:shadow-none flex items-center justify-center gap-2.5 active:scale-95 group"
                 >
                     <Send size={15} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" /> SEND DATA
                 </button>
@@ -3591,7 +3614,7 @@ export default function App() {
         )}
       </div>
 
-      {/* Hardware Access Modal - Fixed Scan logic */}
+      {/* Hardware Access Modal - Refined alignment */}
       {isConnectModalOpen && (
         <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
             <div className="w-[540px] bg-[#0c0c0e] border border-white/20 rounded-[2.5rem] shadow-2xl overflow-hidden ring-1 ring-white/10">
@@ -3628,7 +3651,8 @@ export default function App() {
                                             <Usb size={20} />
                                         </div>
                                         <div>
-                                            <div className="text-[11px] font-black group-hover:text-emerald-400 transition-colors uppercase tracking-tight">Endpoint #{i+1}</div>
+                                            {/* Removed extra space between name and # symbol, and tightened tracking */}
+                                            <div className="text-[11px] font-black group-hover:text-emerald-400 transition-colors uppercase tracking-tighter leading-none">Endpoint#{i+1}</div>
                                             <div className="text-[10px] font-mono text-zinc-500 mt-2 uppercase tracking-tight opacity-70">VID:{p.getInfo().usbVendorId?.toString(16).padStart(4,'0') || '0000'} &nbsp; PID:{p.getInfo().usbProductId?.toString(16).padStart(4,'0') || '0000'}</div>
                                         </div>
                                     </div>
@@ -3642,7 +3666,6 @@ export default function App() {
                 <div className="p-8 bg-[#0a0a0c] border-t border-white/10">
                     <button 
                       onClick={() => {
-                        // Crucial: Synchronous browser trigger for security policy
                         navigator.serial.requestPort()
                           .then(p => {
                             openPort(p);
