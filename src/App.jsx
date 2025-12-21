@@ -4,7 +4,7 @@ import {
   Zap, Activity, Command, Copy, Plus, X,
   Pause, Edit2, Save, Plug, Search, Usb, Filter,
   ChevronDown, Check, ShieldCheck, List, Monitor,
-  ChevronRight, Timer, Clock
+  ChevronRight, Timer, Clock, Sun, Moon
 } from 'lucide-react';
 
 // --- Utility: CRC16 Modbus Calculation ---
@@ -94,6 +94,9 @@ export default function App() {
   const [lineEnding, setLineEnding] = usePersistedState('sf_eol', '\\n');
   const [appendCRC, setAppendCRC] = usePersistedState('sf_crc', false);
   const [showTimestamp, setShowTimestamp] = usePersistedState('sf_show_ts', true);
+  // const [theme, setTheme] = usePersistedState('sf_theme', 'dark'); // 'dark' | 'light'
+  // const isDark = theme === 'dark';
+  const isDark = true; // 暂时禁用浅色主题
 
   // Timer Send
   const [timerEnabled, setTimerEnabled] = useState(false);
@@ -401,82 +404,129 @@ export default function App() {
 
   const COMMON_BAUD_RATES = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
 
+  // Theme colors
+  const t = {
+    // Background
+    pageBg: isDark ? 'bg-[#010101]' : 'bg-gradient-to-br from-slate-100 via-purple-50 to-emerald-50',
+    windowBg: isDark ? 'bg-zinc-800/90' : 'bg-white/95',
+    panelBg: isDark ? 'bg-zinc-800/60' : 'bg-white/80',
+    sideBg: isDark ? 'bg-zinc-800/95' : 'bg-slate-50/95',
+    inputBg: isDark ? 'bg-zinc-700/40' : 'bg-white',
+    logBg: isDark ? 'bg-black/5' : 'bg-slate-50/50',
+    // Text
+    text: isDark ? 'text-zinc-100' : 'text-slate-800',
+    textMuted: isDark ? 'text-zinc-400' : 'text-slate-500',
+    textDim: isDark ? 'text-zinc-500' : 'text-slate-400',
+    // Borders
+    border: isDark ? 'border-white/10' : 'border-slate-200',
+    borderHover: isDark ? 'border-white/20' : 'border-purple-300',
+    // Accent (purple for light, emerald for dark)
+    accent: isDark ? 'emerald' : 'purple',
+    accentText: isDark ? 'text-emerald-400' : 'text-purple-600',
+    accentBg: isDark ? 'bg-emerald-500' : 'bg-purple-500',
+    accentBgLight: isDark ? 'bg-emerald-500/20' : 'bg-purple-500/20',
+    // TX/RX
+    txText: isDark ? 'text-cyan-400' : 'text-blue-600',
+    txBg: isDark ? 'bg-cyan-500/10' : 'bg-blue-100',
+    rxText: isDark ? 'text-emerald-400' : 'text-emerald-600',
+    rxBg: isDark ? 'bg-emerald-500/10' : 'bg-emerald-100',
+    // Button
+    btnPrimary: isDark ? 'from-emerald-600 to-emerald-500' : 'from-purple-500 to-emerald-500',
+    btnPrimaryHover: isDark ? 'hover:from-emerald-500 hover:to-emerald-400' : 'hover:from-purple-400 hover:to-emerald-400',
+  };
+
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-[#010101] text-zinc-100 font-sans selection:bg-emerald-500/30 overflow-hidden relative">
+    <div className={`flex h-screen w-full items-center justify-center ${t.pageBg} ${t.text} font-sans selection:bg-purple-500/30 overflow-hidden relative transition-colors duration-300`}>
 
       {/* Background Layer */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-         <div className="absolute inset-0 bg-[#111316]"></div>
-         <div className="absolute top-[-10%] left-[0%] w-[60%] h-[60%] bg-emerald-500/[0.18] blur-[100px] rounded-full"></div>
-         <div className="absolute bottom-[-10%] right-[0%] w-[55%] h-[60%] bg-teal-400/[0.15] blur-[90px] rounded-full"></div>
-         <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[50%] h-[50%] bg-emerald-400/[0.08] blur-[80px] rounded-full"></div>
-         <div className="absolute inset-0" style={{
-           backgroundImage: `
-             linear-gradient(to right, rgba(16, 185, 129, 0.15) 1px, transparent 1px),
-             linear-gradient(to bottom, rgba(16, 185, 129, 0.15) 1px, transparent 1px)
-           `,
-           backgroundSize: '50px 50px'
-         }}></div>
-         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_50%,_#111316_95%)]"></div>
+         {isDark ? (
+           <>
+             <div className="absolute inset-0 bg-[#111316]"></div>
+             <div className="absolute top-[-10%] left-[0%] w-[60%] h-[60%] bg-emerald-500/[0.18] blur-[100px] rounded-full"></div>
+             <div className="absolute bottom-[-10%] right-[0%] w-[55%] h-[60%] bg-teal-400/[0.15] blur-[90px] rounded-full"></div>
+             <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[50%] h-[50%] bg-emerald-400/[0.08] blur-[80px] rounded-full"></div>
+             <div className="absolute inset-0" style={{
+               backgroundImage: `linear-gradient(to right, rgba(16, 185, 129, 0.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(16, 185, 129, 0.15) 1px, transparent 1px)`,
+               backgroundSize: '50px 50px'
+             }}></div>
+             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_50%,_#111316_95%)]"></div>
+           </>
+         ) : (
+           <>
+             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-300/40 blur-[100px] rounded-full"></div>
+             <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-emerald-300/40 blur-[100px] rounded-full"></div>
+             <div className="absolute top-[30%] right-[20%] w-[30%] h-[30%] bg-violet-200/30 blur-[80px] rounded-full"></div>
+           </>
+         )}
       </div>
 
       {/* Main Window */}
-      <div className="relative w-[75vw] h-[72vh] max-w-[960px] max-h-[640px] flex flex-col animate-in fade-in zoom-in-95 duration-700
-        shadow-[0_0_80px_-20px_rgba(16,185,129,0.2),0_40px_100px_-20px_rgba(0,0,0,1)]
-        rounded-2xl border border-white/15 bg-zinc-800/90 backdrop-blur-3xl overflow-hidden ring-1 ring-white/10">
+      <div className={`relative w-[75vw] h-[72vh] max-w-[960px] max-h-[640px] flex flex-col animate-in fade-in zoom-in-95 duration-700
+        ${isDark ? 'shadow-[0_0_80px_-20px_rgba(16,185,129,0.2),0_40px_100px_-20px_rgba(0,0,0,1)]' : 'shadow-[0_0_60px_-20px_rgba(139,92,246,0.3),0_25px_80px_-20px_rgba(0,0,0,0.2)]'}
+        rounded-2xl ${t.border} border ${t.windowBg} backdrop-blur-3xl overflow-hidden ring-1 ${isDark ? 'ring-white/10' : 'ring-purple-200/50'} transition-colors duration-300`}>
 
-        <div className="absolute inset-0 pointer-events-none border border-emerald-500/10 rounded-2xl opacity-40 shadow-[inset_0_0_20px_rgba(16,185,129,0.05)]"></div>
+        <div className={`absolute inset-0 pointer-events-none border ${isDark ? 'border-emerald-500/10' : 'border-purple-300/20'} rounded-2xl opacity-40`}></div>
 
         {/* Title Bar */}
-        <div className="h-8 bg-black/40 border-b border-white/10 flex items-center justify-between px-4 select-none flex-none z-50">
+        <div className={`h-8 ${isDark ? 'bg-black/40' : 'bg-white/60'} border-b ${t.border} flex items-center justify-between px-4 select-none flex-none z-50`}>
             <div className="flex gap-2">
                 <div className="size-2.5 rounded-full bg-[#FF5F56] shadow-[0_0_6px_rgba(255,95,86,0.3)]"></div>
                 <div className="size-2.5 rounded-full bg-[#FFBD2E] shadow-[0_0_6px_rgba(255,189,46,0.3)]"></div>
                 <div className="size-2.5 rounded-full bg-[#27C93F] shadow-[0_0_6px_rgba(39,201,63,0.3)]"></div>
             </div>
-            <div className="text-[9px] font-black text-zinc-500 tracking-[0.4em] uppercase flex items-center gap-2 opacity-60 group">
-                <Command size={11} className="text-emerald-400 group-hover:scale-110 transition-transform duration-500" />
-                SERIAL FLUX PRO <span className="text-[7px] px-1.5 py-0.5 bg-emerald-500/10 rounded text-emerald-400 font-mono tracking-normal shadow-[0_0_10px_rgba(52,211,153,0.2)]">STABLE_V2.2</span>
+            <div className={`text-[9px] font-black ${t.textDim} tracking-[0.4em] uppercase flex items-center gap-2 opacity-60 group`}>
+                <Command size={11} className={t.accentText} />
+                SERIAL FLUX <span className={`text-[7px] px-1.5 py-0.5 ${t.accentBgLight} rounded ${t.accentText} font-mono tracking-normal`}>V2.3</span>
             </div>
-            <div className="w-12"></div>
+            {/* 暂时隐藏主题切换按钮
+            <button
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              className={`p-1.5 rounded-full ${isDark ? 'hover:bg-white/10' : 'hover:bg-purple-100'} transition-colors`}
+              title={isDark ? 'Light mode' : 'Dark mode'}
+            >
+              {isDark ? <Sun size={12} className="text-amber-400" /> : <Moon size={12} className="text-purple-500" />}
+            </button>
+            */}
+            <div className="w-6"></div>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
           {/* Main Log Area */}
-          <main className="flex-1 flex flex-col min-w-0 relative bg-black/5">
+          <main className={`flex-1 flex flex-col min-w-0 relative ${t.logBg}`}>
 
-            <div className="absolute top-2.5 left-4 z-20 flex items-center gap-3 px-3 py-1.5 pr-5 rounded-full border border-white/10 backdrop-blur-md bg-zinc-800/80 shadow-xl ring-1 ring-white/5 scale-90 origin-left">
-              <div className={`size-6 rounded-full flex items-center justify-center transition-all ${isConnected ? 'bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-zinc-800 text-zinc-500'}`}>
+            <div className={`absolute top-2.5 left-4 z-20 flex items-center gap-3 px-3 py-1.5 pr-5 rounded-full border ${t.border} backdrop-blur-md ${isDark ? 'bg-zinc-800/80' : 'bg-white/80'} shadow-xl ring-1 ${isDark ? 'ring-white/5' : 'ring-purple-100'} scale-90 origin-left`}>
+              <div className={`size-6 rounded-full flex items-center justify-center transition-all ${isConnected ? `${t.accentBg} text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]` : isDark ? 'bg-zinc-800 text-zinc-500' : 'bg-slate-200 text-slate-400'}`}>
                 {isConnected ? <Activity size={12} className="animate-pulse" /> : <Zap size={12} />}
               </div>
               <div className="flex flex-col leading-none">
-                  <span className={`text-[10px] font-black tracking-widest uppercase ${isConnected ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                  <span className={`text-[10px] font-black tracking-widest uppercase ${isConnected ? t.accentText : t.textDim}`}>
                     {isConnected ? 'Active' : 'Offline'}
                   </span>
-                  {isConnected && <span className="text-[8px] text-zinc-400 font-mono mt-0.5 uppercase opacity-60">{baudRate} BAUD</span>}
+                  {isConnected && <span className={`text-[8px] ${t.textMuted} font-mono mt-0.5 uppercase opacity-60`}>{baudRate} BAUD</span>}
               </div>
             </div>
 
             <div className="absolute top-2.5 right-4 z-20 flex items-center gap-2 scale-90 origin-right">
                 <div className="relative group">
-                    <Filter size={12} className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${logFilter ? 'text-emerald-400' : 'text-zinc-500'}`} />
-                    <input type="text" value={logFilter} onChange={e => setLogFilter(e.target.value)} placeholder="Live Filter..." className="h-8 pl-9 pr-3 rounded-full border border-white/10 bg-black/60 text-[10px] w-28 focus:w-48 transition-all outline-none focus:border-emerald-500/40 shadow-inner placeholder:opacity-30" />
+                    <Filter size={12} className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${logFilter ? t.accentText : t.textDim}`} />
+                    <input type="text" value={logFilter} onChange={e => setLogFilter(e.target.value)} placeholder="Filter..." className={`h-8 pl-9 pr-3 rounded-full border ${t.border} ${isDark ? 'bg-black/60' : 'bg-white/80'} text-[10px] w-28 focus:w-48 transition-all outline-none focus:border-purple-400 shadow-inner placeholder:opacity-50`} />
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                    <div className="flex bg-black/70 border border-white/10 rounded-full p-0.5 shadow-lg ring-1 ring-white/5">
-                        <button onClick={() => setViewMode('ascii')} className={`w-12 py-1 rounded-full text-[10px] font-black tracking-wider transition-all ${viewMode === 'ascii' ? 'bg-zinc-700 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>ASC</button>
-                        <button onClick={() => setViewMode('hex')} className={`w-12 py-1 rounded-full text-[10px] font-black tracking-wider transition-all ${viewMode === 'hex' ? 'bg-zinc-700 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}>HEX</button>
+                    <div className={`flex ${isDark ? 'bg-black/70' : 'bg-white/80'} border ${t.border} rounded-full p-0.5 shadow-lg`}>
+                        <button onClick={() => setViewMode('ascii')} className={`w-12 py-1 rounded-full text-[10px] font-black tracking-wider transition-all ${viewMode === 'ascii' ? (isDark ? 'bg-zinc-700 text-white' : 'bg-purple-100 text-purple-700') : t.textDim + ' hover:opacity-80'}`}>ASC</button>
+                        <button onClick={() => setViewMode('hex')} className={`w-12 py-1 rounded-full text-[10px] font-black tracking-wider transition-all ${viewMode === 'hex' ? (isDark ? 'bg-zinc-700 text-white' : 'bg-purple-100 text-purple-700') : t.textDim + ' hover:opacity-80'}`}>HEX</button>
                     </div>
-                    <div className="flex bg-black/70 border border-white/10 rounded-full p-0.5 shadow-lg ring-1 ring-white/5">
-                        <button onClick={() => setEncoding('utf-8')} className={`w-15 py-1 rounded-full text-[10px] font-black tracking-wider transition-all ${encoding === 'utf-8' ? 'bg-emerald-600/30 text-emerald-400 border border-emerald-500/20 shadow-inner' : 'text-zinc-500 hover:text-zinc-300'}`}>UTF-8</button>
-                        <button onClick={() => setEncoding('gbk')} className={`w-15 py-1 rounded-full text-[10px] font-black tracking-wider transition-all ${encoding === 'gbk' ? 'bg-emerald-600/30 text-emerald-400 border border-emerald-500/20 shadow-inner' : 'text-zinc-500 hover:text-zinc-300'}`}>GBK</button>
+                    <div className={`flex ${isDark ? 'bg-black/70' : 'bg-white/80'} border ${t.border} rounded-full p-0.5 shadow-lg`}>
+                        <button onClick={() => setEncoding('utf-8')} className={`px-2 py-1 rounded-full text-[10px] font-black tracking-wider transition-all ${encoding === 'utf-8' ? t.accentBgLight + ' ' + t.accentText : t.textDim}`}>UTF-8</button>
+                        <button onClick={() => setEncoding('gbk')} className={`px-2 py-1 rounded-full text-[10px] font-black tracking-wider transition-all ${encoding === 'gbk' ? t.accentBgLight + ' ' + t.accentText : t.textDim}`}>GBK</button>
                     </div>
                 </div>
                 {isConnected && (
                   <button
                     onClick={() => setIsPaused(!isPaused)}
-                    className={`size-8 rounded-full flex items-center justify-center border transition-all shadow-lg ${isPaused ? 'bg-amber-500 text-black border-amber-400 shadow-amber-500/30' : 'bg-black/60 border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'}`}
+                    className={`size-8 rounded-full flex items-center justify-center border transition-all shadow-lg ${isPaused ? 'bg-amber-500 text-white border-amber-400' : isDark ? 'bg-black/60 border-white/10 text-zinc-400 hover:text-white' : 'bg-white border-slate-200 text-slate-400 hover:text-slate-600'}`}
                     title={isPaused ? "Resume" : "Pause"}
                   >
                     {isPaused ? <Play size={14} fill="currentColor" /> : <Pause size={14} fill="currentColor" />}
@@ -498,12 +548,12 @@ export default function App() {
                     URL.revokeObjectURL(url);
                   }}
                   disabled={logs.length === 0}
-                  className="size-8 rounded-full flex items-center justify-center bg-black/60 border border-white/10 text-zinc-400 hover:text-emerald-400 transition-all shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                  className={`size-8 rounded-full flex items-center justify-center ${isDark ? 'bg-black/60 border-white/10' : 'bg-white border-slate-200'} border ${t.textMuted} hover:${t.accentText} transition-all shadow-lg disabled:opacity-30 disabled:cursor-not-allowed`}
                   title="Download Log"
                 >
                   <Download size={14} />
                 </button>
-                <button onClick={() => { if (logs.length === 0 || confirm('Clear all logs?')) setLogs([]); }} className="size-8 rounded-full flex items-center justify-center bg-black/60 border border-white/10 text-zinc-400 hover:text-rose-400 transition-all shadow-lg" title="Clear Log"><Trash2 size={14} /></button>
+                <button onClick={() => { if (logs.length === 0 || confirm('Clear all logs?')) setLogs([]); }} className={`size-8 rounded-full flex items-center justify-center ${isDark ? 'bg-black/60 border-white/10' : 'bg-white border-slate-200'} border ${t.textMuted} hover:text-rose-500 transition-all shadow-lg`} title="Clear Log"><Trash2 size={14} /></button>
             </div>
 
             {/* Log Container */}
@@ -513,17 +563,17 @@ export default function App() {
               style={{ overflowAnchor: 'none' }}
             >
               {logs.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center opacity-20 select-none transition-all">
-                    <Terminal size={56} className="text-emerald-400 mb-4 drop-shadow-[0_0_10px_rgba(52,211,153,0.3)]" strokeWidth={1.5} />
-                    <p className="tracking-[0.6em] font-black text-sm uppercase text-emerald-500/60">STANDBY_PROBE</p>
+                <div className="h-full flex flex-col items-center justify-center opacity-30 select-none transition-all">
+                    <Terminal size={56} className={t.accentText} strokeWidth={1.5} />
+                    <p className={`tracking-[0.6em] font-black text-sm uppercase mt-4 ${t.textDim}`}>STANDBY</p>
                 </div>
               ) : (
                 <div className="space-y-0.5">
                   {logs.filter(l => !logFilter || String(l.text).toLowerCase().includes(logFilter.toLowerCase())).map((log) => (
-                    <div key={log.id} onClick={() => { navigator.clipboard.writeText(String(log.text)); setCopyFeedback("COPIED!"); setTimeout(()=>setCopyFeedback(null), 1000); }} className="flex items-start gap-2 hover:bg-white/[0.04] -mx-4 px-4 py-0.5 rounded cursor-pointer group transition-colors border border-transparent">
-                      {showTimestamp && <span className="text-[10px] text-zinc-400 shrink-0 font-mono select-none tabular-nums">{log.timestamp}</span>}
-                      <span className={`shrink-0 text-[10px] font-black px-1.5 rounded-sm border min-w-[22px] text-center ${log.type === 'tx' ? 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20 shadow-[0_0_5px_rgba(34,211,238,0.1)]' : 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_5px_rgba(52,211,153,0.2)]'}`}>{log.type === 'tx' ? 'TX' : 'RX'}</span>
-                      <div className={`flex-1 break-all font-medium ${log.type === 'tx' ? 'text-cyan-300' : 'text-emerald-300'}`}>
+                    <div key={log.id} onClick={() => { navigator.clipboard.writeText(String(log.text)); setCopyFeedback("COPIED!"); setTimeout(()=>setCopyFeedback(null), 1000); }} className={`flex items-start gap-2 ${isDark ? 'hover:bg-white/[0.04]' : 'hover:bg-purple-50'} -mx-4 px-4 py-0.5 rounded cursor-pointer group transition-colors`}>
+                      {showTimestamp && <span className={`text-[10px] ${t.textMuted} shrink-0 font-mono select-none tabular-nums`}>{log.timestamp}</span>}
+                      <span className={`shrink-0 text-[10px] font-black px-1.5 rounded-sm border min-w-[22px] text-center ${log.type === 'tx' ? `${t.txText} ${t.txBg} border-current/20` : `${t.rxText} ${t.rxBg} border-current/20`}`}>{log.type === 'tx' ? 'TX' : 'RX'}</span>
+                      <div className={`flex-1 break-all font-medium ${log.type === 'tx' ? (isDark ? 'text-cyan-300' : 'text-blue-700') : (isDark ? 'text-emerald-300' : 'text-emerald-700')}`}>
                         {renderContent(log.text)}
                       </div>
                     </div>
@@ -532,73 +582,73 @@ export default function App() {
               )}
             </div>
 
-            <div className="h-8 flex items-center justify-between px-5 text-[10px] text-zinc-500 select-none border-t border-white/5 bg-black/40">
+            <div className={`h-8 flex items-center justify-between px-5 text-[10px] ${t.textDim} select-none border-t ${t.border} ${isDark ? 'bg-black/40' : 'bg-white/60'}`}>
                 <div className="flex items-center gap-8 font-black uppercase tracking-tight opacity-70">
-                    <span className="flex items-center gap-3"><span className={`size-1.5 rounded-full transition-all duration-200 ${Date.now() - lastActivity.time < 100 && lastActivity.type === 'rx' ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)] scale-110' : 'bg-emerald-950'}`}></span> RX: {logs.filter(l => l.type === 'rx').length}</span>
-                    <span className="flex items-center gap-3"><span className={`size-1.5 rounded-full transition-all duration-200 ${Date.now() - lastActivity.time < 100 && lastActivity.type === 'tx' ? 'bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,1)] scale-110' : 'bg-cyan-950'}`}></span> TX: {logs.filter(l => l.type === 'tx').length}</span>
+                    <span className="flex items-center gap-3"><span className={`size-1.5 rounded-full transition-all duration-200 ${Date.now() - lastActivity.time < 100 && lastActivity.type === 'rx' ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)] scale-110' : isDark ? 'bg-emerald-950' : 'bg-emerald-200'}`}></span> RX: {logs.filter(l => l.type === 'rx').length}</span>
+                    <span className="flex items-center gap-3"><span className={`size-1.5 rounded-full transition-all duration-200 ${Date.now() - lastActivity.time < 100 && lastActivity.type === 'tx' ? 'bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,1)] scale-110' : isDark ? 'bg-cyan-950' : 'bg-blue-200'}`}></span> TX: {logs.filter(l => l.type === 'tx').length}</span>
                 </div>
                 <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer hover:text-zinc-300 transition-colors group">
-                        <div className={`size-2 rounded-full transition-colors ${showTimestamp ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-zinc-800'}`}></div>
+                    <label className={`flex items-center gap-2 cursor-pointer ${isDark ? 'hover:text-zinc-300' : 'hover:text-slate-700'} transition-colors group`}>
+                        <div className={`size-2 rounded-full transition-colors ${showTimestamp ? t.accentBg : isDark ? 'bg-zinc-800' : 'bg-slate-300'}`}></div>
                         <input type="checkbox" checked={showTimestamp} onChange={e => setShowTimestamp(e.target.checked)} className="hidden" />
                         <Clock size={10} />
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer hover:text-zinc-300 transition-colors group">
-                        <div className={`size-2 rounded-full transition-colors ${autoScroll ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-zinc-800'}`}></div>
+                    <label className={`flex items-center gap-2 cursor-pointer ${isDark ? 'hover:text-zinc-300' : 'hover:text-slate-700'} transition-colors group`}>
+                        <div className={`size-2 rounded-full transition-colors ${autoScroll ? t.accentBg : isDark ? 'bg-zinc-800' : 'bg-slate-300'}`}></div>
                         <input type="checkbox" checked={autoScroll} onChange={e => setAutoScroll(e.target.checked)} className="hidden" />
-                        <span className="font-bold tracking-widest uppercase text-[9px]">AutoScroll</span>
+                        <span className="font-bold tracking-widest uppercase text-[9px]">Auto</span>
                     </label>
                 </div>
             </div>
           </main>
 
-          <aside className="w-[240px] bg-zinc-800/95 border-l border-white/10 flex flex-col z-20 relative p-3.5 space-y-3.5 overflow-y-auto custom-scrollbar shadow-[-10px_0_30px_rgba(0,0,0,0.3)]">
+          <aside className={`w-[240px] ${t.sideBg} border-l ${t.border} flex flex-col z-20 relative p-3.5 space-y-3.5 overflow-y-auto custom-scrollbar ${isDark ? 'shadow-[-10px_0_30px_rgba(0,0,0,0.3)]' : 'shadow-[-5px_0_20px_rgba(0,0,0,0.05)]'} transition-colors duration-300`}>
 
-            <div className="bg-zinc-800/60 border border-white/10 rounded-xl p-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-                <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2"><Plug size={12} className="text-emerald-400" /> Session</h3>
+            <div className={`${t.panelBg} border ${t.border} rounded-xl p-3 ${isDark ? 'shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]' : 'shadow-sm'}`}>
+                <h3 className={`text-[10px] font-black ${t.textDim} uppercase tracking-[0.2em] mb-3 flex items-center gap-2`}><Plug size={12} className={t.accentText} /> Session</h3>
                 <div className="space-y-2.5">
                    <div className="relative w-full" ref={baudRef}>
                       <button
                         onClick={() => !isConnected && setIsBaudDropdownOpen(!isBaudDropdownOpen)}
                         disabled={isConnected}
-                        className={`w-full h-full border rounded-lg px-3 py-2 text-[11px] font-mono font-bold flex items-center justify-between transition-all shadow-lg group ${isConnected ? 'bg-zinc-900/50 border-zinc-700/50 cursor-not-allowed opacity-60' : 'bg-black/60 border-white/10 hover:bg-zinc-800'}`}
+                        className={`w-full h-full border rounded-lg px-3 py-2 text-[11px] font-mono font-bold flex items-center justify-between transition-all shadow-lg group ${isConnected ? (isDark ? 'bg-zinc-900/50 border-zinc-700/50' : 'bg-slate-100 border-slate-200') + ' cursor-not-allowed opacity-60' : (isDark ? 'bg-black/60 border-white/10 hover:bg-zinc-800' : 'bg-white border-slate-200 hover:bg-slate-50')}`}
                       >
-                        <span className={isConnected ? 'text-zinc-500' : 'text-zinc-300'}>{baudRate}</span>
-                        {!isConnected && <ChevronDown size={11} className={isBaudDropdownOpen ? "rotate-180 transition-transform" : "transition-transform"} />}
+                        <span className={isConnected ? (isDark ? 'text-zinc-500' : 'text-slate-400') : (isDark ? 'text-zinc-300' : 'text-slate-700')}>{baudRate}</span>
+                        {!isConnected && <ChevronDown size={11} className={`${isDark ? 'text-zinc-400' : 'text-slate-500'} ${isBaudDropdownOpen ? "rotate-180 transition-transform" : "transition-transform"}`} />}
                       </button>
                       {isBaudDropdownOpen && !isConnected && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-800 border border-white/20 rounded-lg shadow-[0_10px_30px_rgba(0,0,0,0.9)] z-50 max-h-40 overflow-y-auto ring-1 ring-white/10 custom-scrollbar">
+                          <div className={`absolute top-full left-0 right-0 mt-1 ${isDark ? 'bg-zinc-800 border-white/20 ring-white/10' : 'bg-white border-slate-200 ring-purple-100'} border rounded-lg shadow-[0_10px_30px_rgba(0,0,0,0.3)] z-50 max-h-40 overflow-y-auto ring-1 custom-scrollbar`}>
                               {COMMON_BAUD_RATES.map(rate => (
-                                  <button key={rate} onClick={() => { setBaudRate(rate); setIsBaudDropdownOpen(false); }} className="w-full text-left px-3 py-2 text-[11px] font-mono font-bold hover:bg-emerald-500/20 transition-colors border-b border-white/5 last:border-0">{rate}</button>
+                                  <button key={rate} onClick={() => { setBaudRate(rate); setIsBaudDropdownOpen(false); }} className={`w-full text-left px-3 py-2 text-[11px] font-mono font-bold ${isDark ? 'hover:bg-emerald-500/20 border-white/5' : 'hover:bg-purple-50 border-slate-100 text-slate-700'} transition-colors border-b last:border-0`}>{rate}</button>
                               ))}
                           </div>
                       )}
                    </div>
                    <button
                     onClick={isConnected ? disconnectPort : () => setIsConnectModalOpen(true)}
-                    className={`w-full py-2.5 rounded-lg font-black text-[10px] tracking-[0.2em] transition-all shadow-xl active:scale-[0.98] ${isConnected ? 'bg-rose-500/10 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20' : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-500/10'}`}
+                    className={`w-full py-2.5 rounded-lg font-black text-[10px] tracking-[0.2em] transition-all shadow-xl active:scale-[0.98] ${isConnected ? 'bg-rose-500/10 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20' : (isDark ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/10' : 'bg-gradient-to-r from-purple-500 to-emerald-500 hover:from-purple-400 hover:to-emerald-400 shadow-purple-500/10') + ' text-white'}`}
                    >
                     {isConnected ? 'DISCONNECT' : 'CONNECT'}
                    </button>
                 </div>
             </div>
 
-            <div className="bg-zinc-800/60 border border-white/10 rounded-xl p-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+            <div className={`${t.panelBg} border ${t.border} rounded-xl p-3 ${isDark ? 'shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]' : 'shadow-sm'}`}>
                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] flex items-center gap-2"><List size={12} className="text-emerald-400" /> Macros</h3>
-                    <button onClick={() => setIsEditingCmds(!isEditingCmds)} className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 transition-all border border-white/5 shadow-sm">{isEditingCmds ? <Save size={12} /> : <Edit2 size={12} />}</button>
+                    <h3 className={`text-[10px] font-black ${t.textDim} uppercase tracking-[0.2em] flex items-center gap-2`}><List size={12} className={t.accentText} /> Macros</h3>
+                    <button onClick={() => setIsEditingCmds(!isEditingCmds)} className={`p-1.5 rounded-lg ${isDark ? 'bg-white/5 hover:bg-white/10 border-white/5' : 'bg-slate-100 hover:bg-slate-200 border-slate-200'} ${t.textMuted} transition-all border shadow-sm`}>{isEditingCmds ? <Save size={12} /> : <Edit2 size={12} />}</button>
                  </div>
                  <div className="space-y-2">
                  {isEditingCmds ? (
                    <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
                       {quickCommands.map(cmd => (
-                        <div key={cmd.id} className="flex items-center gap-1.5 p-2 bg-zinc-800/60 rounded-lg border border-white/10 border-l-2 border-l-emerald-500/50">
-                           <input type="text" placeholder="Lbl" value={cmd.label} onChange={e => {const n=[...quickCommands]; n.find(c=>c.id===cmd.id).label=e.target.value; setQuickCommands(n);}} className="w-12 shrink-0 bg-zinc-800 border border-white/10 rounded px-1.5 py-1 text-[10px] focus:border-emerald-500/40 outline-none font-bold text-zinc-200" />
-                           <input type="text" placeholder="Cmd" value={cmd.cmd} onChange={e => {const n=[...quickCommands]; n.find(c=>c.id===cmd.id).cmd=e.target.value; setQuickCommands(n);}} className="flex-1 min-w-0 bg-zinc-800 border border-white/10 rounded px-1.5 py-1 text-[10px] font-mono font-bold text-emerald-400 focus:border-emerald-500/40 outline-none" />
+                        <div key={cmd.id} className={`flex items-center gap-1.5 p-2 ${isDark ? 'bg-zinc-800/60 border-white/10 border-l-emerald-500/50' : 'bg-white border-slate-200 border-l-purple-400'} rounded-lg border border-l-2`}>
+                           <input type="text" placeholder="Lbl" value={cmd.label} onChange={e => {const n=[...quickCommands]; n.find(c=>c.id===cmd.id).label=e.target.value; setQuickCommands(n);}} className={`w-12 shrink-0 ${isDark ? 'bg-zinc-800 border-white/10 text-zinc-200 focus:border-emerald-500/40' : 'bg-slate-50 border-slate-200 text-slate-700 focus:border-purple-400'} border rounded px-1.5 py-1 text-[10px] outline-none font-bold`} />
+                           <input type="text" placeholder="Cmd" value={cmd.cmd} onChange={e => {const n=[...quickCommands]; n.find(c=>c.id===cmd.id).cmd=e.target.value; setQuickCommands(n);}} className={`flex-1 min-w-0 ${isDark ? 'bg-zinc-800 border-white/10 text-emerald-400 focus:border-emerald-500/40' : 'bg-slate-50 border-slate-200 text-purple-600 focus:border-purple-400'} border rounded px-1.5 py-1 text-[10px] font-mono font-bold outline-none`} />
                            <button onClick={() => setQuickCommands(prev => prev.filter(c => c.id !== cmd.id))} className="size-6 bg-rose-600/10 text-rose-500 rounded flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20 shrink-0"><X size={12}/></button>
                         </div>
                       ))}
-                      <button onClick={() => setQuickCommands([...quickCommands, {id: Date.now(), label:'NEW', cmd:''}])} className="w-full py-1.5 border border-dashed border-white/20 rounded-lg text-[9px] text-zinc-500 hover:text-emerald-400 transition-all font-black uppercase">+ ADD MACRO</button>
+                      <button onClick={() => setQuickCommands([...quickCommands, {id: Date.now(), label:'NEW', cmd:''}])} className={`w-full py-1.5 border border-dashed ${isDark ? 'border-white/20 text-zinc-500 hover:text-emerald-400' : 'border-slate-300 text-slate-400 hover:text-purple-500'} rounded-lg text-[9px] transition-all font-black uppercase`}>+ ADD MACRO</button>
                    </div>
                  ) : (
                    <div className="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
@@ -607,13 +657,13 @@ export default function App() {
                             key={cmd.id}
                             onClick={() => sendData(cmd.cmd)}
                             disabled={!isConnected}
-                            className="group flex items-center justify-between p-2.5 px-3 bg-zinc-800/70 border border-white/10 rounded-lg hover:border-emerald-500/60 hover:bg-zinc-700/80 transition-all disabled:opacity-40 active:translate-x-1 shadow-sm text-left"
+                            className={`group flex items-center justify-between p-2.5 px-3 ${isDark ? 'bg-zinc-800/70 border-white/10 hover:border-emerald-500/60 hover:bg-zinc-700/80' : 'bg-white border-slate-200 hover:border-purple-400 hover:bg-purple-50'} border rounded-lg transition-all disabled:opacity-40 active:translate-x-1 shadow-sm text-left`}
                         >
                            <div className="overflow-hidden min-w-0">
-                               <div className="text-[11px] font-black text-zinc-200 uppercase tracking-widest truncate">{cmd.label}</div>
-                               <div className="text-[10px] font-mono font-medium text-emerald-400/80 truncate mt-0.5">{cmd.cmd}</div>
+                               <div className={`text-[11px] font-black ${isDark ? 'text-zinc-200' : 'text-slate-700'} uppercase tracking-widest truncate`}>{cmd.label}</div>
+                               <div className={`text-[10px] font-mono font-medium ${isDark ? 'text-emerald-400/80' : 'text-purple-500'} truncate mt-0.5`}>{cmd.cmd}</div>
                            </div>
-                           <ChevronRight size={12} className="text-zinc-600 group-hover:text-emerald-400 transition-colors shrink-0" />
+                           <ChevronRight size={12} className={`${isDark ? 'text-zinc-600 group-hover:text-emerald-400' : 'text-slate-400 group-hover:text-purple-500'} transition-colors shrink-0`} />
                         </button>
                       ))}
                    </div>
@@ -621,10 +671,10 @@ export default function App() {
                  </div>
             </div>
 
-            <div className="bg-zinc-800/60 border border-white/10 rounded-xl p-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-                <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-2.5 flex items-center gap-2"><Highlighter size={12} className="text-emerald-400" /> Highlighting</h3>
+            <div className={`${t.panelBg} border ${t.border} rounded-xl p-3 ${isDark ? 'shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]' : 'shadow-sm'}`}>
+                <h3 className={`text-[10px] font-black ${t.textDim} uppercase tracking-[0.2em] mb-2.5 flex items-center gap-2`}><Highlighter size={12} className={t.accentText} /> Highlighting</h3>
                 <div className="space-y-3">
-                    <input type="text" value={highlightKeyword} onChange={e => setHighlightKeyword(e.target.value)} placeholder="Keyword..." className="w-full bg-zinc-800/80 border border-white/10 rounded-lg px-2.5 py-1.5 text-[11px] outline-none focus:border-emerald-500/40 transition-all font-bold text-emerald-400" />
+                    <input type="text" value={highlightKeyword} onChange={e => setHighlightKeyword(e.target.value)} placeholder="Keyword..." className={`w-full ${isDark ? 'bg-zinc-800/80 border-white/10 text-emerald-400 focus:border-emerald-500/40' : 'bg-white border-slate-200 text-purple-600 focus:border-purple-400'} border rounded-lg px-2.5 py-1.5 text-[11px] outline-none transition-all font-bold`} />
                     <div className="flex gap-1.5 justify-between px-0.5">
                         {HIGHLIGHT_PRESETS.map((c, i) => (
                             <button
@@ -637,15 +687,15 @@ export default function App() {
                 </div>
             </div>
 
-            <div className="mt-auto space-y-2 border-t border-white/10 pt-3">
+            <div className={`mt-auto space-y-2 border-t ${t.border} pt-3`}>
                 <div className="flex items-center justify-between px-1">
                     <div className="flex gap-2">
-                        <button onClick={() => setAppendCRC(!appendCRC)} className={`px-2 py-0.5 rounded border text-[8px] font-black transition-all ${appendCRC ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-zinc-700/50 text-zinc-300 border-zinc-600/50 hover:border-zinc-500'}`}>CRC16</button>
-                        <button onClick={() => setUseHexSend(!useHexSend)} className={`px-2 py-0.5 rounded border text-[8px] font-black transition-all ${useHexSend ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-zinc-700/50 text-zinc-300 border-zinc-600/50 hover:border-zinc-500'}`}>HEX</button>
+                        <button onClick={() => setAppendCRC(!appendCRC)} className={`px-2 py-0.5 rounded border text-[8px] font-black transition-all ${appendCRC ? (isDark ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-purple-100 text-purple-600 border-purple-300') : (isDark ? 'bg-zinc-700/50 text-zinc-300 border-zinc-600/50 hover:border-zinc-500' : 'bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300')}`}>CRC16</button>
+                        <button onClick={() => setUseHexSend(!useHexSend)} className={`px-2 py-0.5 rounded border text-[8px] font-black transition-all ${useHexSend ? (isDark ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-purple-100 text-purple-600 border-purple-300') : (isDark ? 'bg-zinc-700/50 text-zinc-300 border-zinc-600/50 hover:border-zinc-500' : 'bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300')}`}>HEX</button>
                     </div>
-                    <div className="flex bg-zinc-700/30 border border-zinc-600/50 rounded overflow-hidden">
+                    <div className={`flex ${isDark ? 'bg-zinc-700/30 border-zinc-600/50' : 'bg-slate-100 border-slate-200'} border rounded overflow-hidden`}>
                         {[ {label:'\\n', val:'\\n'}, {label:'\\r\\n', val:'\\r\\n'} ].map(opt => (
-                            <button key={opt.val} onClick={() => setLineEnding(opt.val)} className={`px-2 py-0.5 text-[8px] font-black transition-all ${lineEnding === opt.val ? 'bg-emerald-500/20 text-emerald-400' : 'text-zinc-300 hover:text-white'}`}>{opt.label}</button>
+                            <button key={opt.val} onClick={() => setLineEnding(opt.val)} className={`px-2 py-0.5 text-[8px] font-black transition-all ${lineEnding === opt.val ? (isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-purple-100 text-purple-600') : (isDark ? 'text-zinc-300 hover:text-white' : 'text-slate-500 hover:text-slate-700')}`}>{opt.label}</button>
                         ))}
                     </div>
                 </div>
@@ -655,7 +705,7 @@ export default function App() {
                     <button
                       onClick={() => setTimerEnabled(!timerEnabled)}
                       disabled={!isConnected || !inputText}
-                      className={`flex items-center gap-1.5 px-2 py-1 rounded border text-[8px] font-black transition-all ${timerEnabled ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 animate-pulse' : 'bg-zinc-700/50 text-zinc-300 border-zinc-600/50 hover:border-zinc-500'} disabled:opacity-30 disabled:cursor-not-allowed`}
+                      className={`flex items-center gap-1.5 px-2 py-1 rounded border text-[8px] font-black transition-all ${timerEnabled ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 animate-pulse' : (isDark ? 'bg-zinc-700/50 text-zinc-300 border-zinc-600/50 hover:border-zinc-500' : 'bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-300')} disabled:opacity-30 disabled:cursor-not-allowed`}
                     >
                       <Timer size={10} /> {timerEnabled ? 'STOP' : 'TIMER'}
                     </button>
@@ -666,9 +716,9 @@ export default function App() {
                         const val = e.target.value.replace(/[^0-9]/g, '');
                         setTimerInterval(val === '' ? 100 : Math.max(100, parseInt(val)));
                       }}
-                      className="w-16 bg-zinc-700/50 border border-zinc-600/50 rounded px-2 py-1 text-[10px] font-mono text-zinc-200 text-center outline-none focus:border-emerald-500/40"
+                      className={`w-16 ${isDark ? 'bg-zinc-700/50 border-zinc-600/50 text-zinc-200 focus:border-emerald-500/40' : 'bg-white border-slate-200 text-slate-700 focus:border-purple-400'} border rounded px-2 py-1 text-[10px] font-mono text-center outline-none`}
                     />
-                    <span className="text-[8px] text-zinc-400 font-bold">ms</span>
+                    <span className={`text-[8px] ${t.textMuted} font-bold`}>ms</span>
                 </div>
 
                 <div className="relative group">
@@ -677,14 +727,14 @@ export default function App() {
                         onChange={e => setInputText(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Enter to send, Shift+Enter newline, ↑↓ history"
-                        className="w-full h-28 bg-zinc-700/40 border border-zinc-600/50 rounded-xl p-3 text-[12px] font-mono focus:outline-none focus:border-emerald-500/40 transition-all resize-none placeholder:text-zinc-500 placeholder:text-[10px] text-emerald-100"
+                        className={`w-full h-28 ${isDark ? 'bg-zinc-700/40 border-zinc-600/50 text-emerald-100 focus:border-emerald-500/40 placeholder:text-zinc-500' : 'bg-white border-slate-200 text-slate-800 focus:border-purple-400 placeholder:text-slate-400'} border rounded-xl p-3 text-[12px] font-mono focus:outline-none transition-all resize-none placeholder:text-[10px]`}
                     />
                 </div>
                 <button
                   onClick={() => sendData()}
                   disabled={!isConnected}
                   title={!isConnected ? "Connect first" : "Send data"}
-                  className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:from-zinc-700 disabled:to-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-white text-[10px] font-black tracking-[0.3em] rounded-xl transition-all shadow-lg shadow-emerald-900/20 disabled:shadow-none flex items-center justify-center gap-2.5 active:scale-95 group"
+                  className={`w-full py-3.5 bg-gradient-to-r ${t.btnPrimary} ${t.btnPrimaryHover} disabled:from-zinc-700 disabled:to-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-white text-[10px] font-black tracking-[0.3em] rounded-xl transition-all shadow-lg ${isDark ? 'shadow-emerald-900/20' : 'shadow-purple-500/20'} disabled:shadow-none flex items-center justify-center gap-2.5 active:scale-95 group`}
                 >
                     <Send size={15} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                     {isConnected ? 'SEND' : 'NOT CONNECTED'}
@@ -695,7 +745,7 @@ export default function App() {
 
         {/* Feedback Toast */}
         {copyFeedback && (
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-zinc-800 border border-emerald-500/40 text-emerald-400 px-6 py-2 rounded-full text-[11px] font-black tracking-[0.3em] shadow-[0_15px_40px_rgba(0,0,0,0.6)] animate-in fade-in slide-in-from-bottom-4">
+            <div className={`absolute bottom-10 left-1/2 -translate-x-1/2 z-[100] ${isDark ? 'bg-zinc-800 border-emerald-500/40 text-emerald-400' : 'bg-white border-purple-300 text-purple-600'} border px-6 py-2 rounded-full text-[11px] font-black tracking-[0.3em] shadow-[0_15px_40px_rgba(0,0,0,0.3)] animate-in fade-in slide-in-from-bottom-4`}>
                 {copyFeedback}
             </div>
         )}
@@ -703,53 +753,53 @@ export default function App() {
 
       {/* Connect Modal */}
       {isConnectModalOpen && (
-        <div className="absolute inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
-            <div className="w-[540px] bg-[#0c0c0e] border border-white/20 rounded-[2.5rem] shadow-2xl overflow-hidden ring-1 ring-white/10">
-                <div className="p-8 border-b border-white/10 flex items-center justify-between bg-zinc-800/50">
+        <div className={`absolute inset-0 z-[200] flex items-center justify-center ${isDark ? 'bg-black/80' : 'bg-slate-900/50'} backdrop-blur-xl animate-in fade-in duration-300`}>
+            <div className={`w-[540px] ${isDark ? 'bg-[#0c0c0e] border-white/20 ring-white/10' : 'bg-white border-purple-200 ring-purple-100'} border rounded-[2.5rem] shadow-2xl overflow-hidden ring-1`}>
+                <div className={`p-8 border-b ${isDark ? 'border-white/10 bg-zinc-800/50' : 'border-purple-100 bg-gradient-to-r from-purple-50 to-emerald-50'} flex items-center justify-between`}>
                     <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shadow-inner">
-                            <Usb className="text-emerald-400" size={24} />
+                        <div className={`w-12 h-12 rounded-2xl ${isDark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-purple-100 border-purple-200'} flex items-center justify-center border shadow-inner`}>
+                            <Usb className={isDark ? 'text-emerald-400' : 'text-purple-500'} size={24} />
                         </div>
                         <div>
-                            <h3 className="font-black text-sm tracking-[0.3em] uppercase">Hardware Hub</h3>
-                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1 opacity-60">Authorize port sessions</p>
+                            <h3 className={`font-black text-sm tracking-[0.3em] uppercase ${isDark ? '' : 'text-slate-800'}`}>Hardware Hub</h3>
+                            <p className={`text-[10px] ${isDark ? 'text-zinc-500' : 'text-slate-500'} font-bold uppercase tracking-widest mt-1 opacity-60`}>Authorize port sessions</p>
                         </div>
                     </div>
-                    <button onClick={() => setIsConnectModalOpen(false)} className="p-3 bg-white/5 hover:bg-rose-500/20 hover:text-rose-500 rounded-full text-zinc-500 transition-all border border-white/5 flex items-center justify-center"><X size={18} /></button>
+                    <button onClick={() => setIsConnectModalOpen(false)} className={`p-3 ${isDark ? 'bg-white/5 border-white/5 text-zinc-500' : 'bg-slate-100 border-slate-200 text-slate-400'} hover:bg-rose-500/20 hover:text-rose-500 rounded-full transition-all border flex items-center justify-center`}><X size={18} /></button>
                 </div>
 
-                <div className="p-8 bg-black/20">
+                <div className={`p-8 ${isDark ? 'bg-black/20' : 'bg-white'}`}>
                     <div className="relative group mb-8">
-                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" />
-                        <input type="text" placeholder="Filter authorized devices..." value={portSearchQuery} onChange={e => setPortSearchQuery(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-xs outline-none focus:border-emerald-500/40 transition-all shadow-inner tracking-wider" />
+                        <Search size={18} className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-zinc-600' : 'text-slate-400'}`} />
+                        <input type="text" placeholder="Filter authorized devices..." value={portSearchQuery} onChange={e => setPortSearchQuery(e.target.value)} className={`w-full ${isDark ? 'bg-black/40 border-white/10 focus:border-emerald-500/40' : 'bg-slate-50 border-slate-200 focus:border-purple-400 text-slate-700'} border rounded-2xl pl-12 pr-4 py-4 text-xs outline-none transition-all shadow-inner tracking-wider`} />
                     </div>
 
                     <div className="max-h-80 overflow-y-auto custom-scrollbar flex flex-col gap-4 pr-2">
                         {availablePorts.length === 0 ? (
                             <div className="text-center py-16">
-                                <Monitor size={64} className="mx-auto text-zinc-800 mb-6 opacity-30" />
-                                <div className="text-zinc-600 text-[10px] font-black tracking-[0.4em] uppercase opacity-40">No Hardware Linked</div>
+                                <Monitor size={64} className={`mx-auto ${isDark ? 'text-zinc-800' : 'text-slate-300'} mb-6 opacity-30`} />
+                                <div className={`${isDark ? 'text-zinc-600' : 'text-slate-400'} text-[10px] font-black tracking-[0.4em] uppercase opacity-40`}>No Hardware Linked</div>
                             </div>
                         ) : (
                             availablePorts.map((p, i) => (
-                                <button key={i} onClick={() => openPort(p)} className="w-full text-left p-5 bg-zinc-800/50 border border-white/5 hover:border-emerald-500/50 rounded-3xl group transition-all flex items-center justify-between shadow-lg hover:bg-zinc-700/60">
+                                <button key={i} onClick={() => openPort(p)} className={`w-full text-left p-5 ${isDark ? 'bg-zinc-800/50 border-white/5 hover:border-emerald-500/50 hover:bg-zinc-700/60' : 'bg-slate-50 border-slate-200 hover:border-purple-400 hover:bg-purple-50'} border rounded-3xl group transition-all flex items-center justify-between shadow-lg`}>
                                     <div className="flex items-center gap-6">
-                                        <div className="w-11 h-11 rounded-2xl bg-black/60 flex items-center justify-center group-hover:text-emerald-400 group-hover:bg-emerald-500/10 transition-all border border-white/5">
+                                        <div className={`w-11 h-11 rounded-2xl ${isDark ? 'bg-black/60 border-white/5 group-hover:text-emerald-400 group-hover:bg-emerald-500/10' : 'bg-white border-slate-200 group-hover:text-purple-500 group-hover:bg-purple-100'} flex items-center justify-center transition-all border`}>
                                             <Usb size={20} />
                                         </div>
                                         <div>
-                                            <div className="text-[11px] font-black group-hover:text-emerald-400 transition-colors uppercase tracking-tighter leading-none">Endpoint#{i+1}</div>
-                                            <div className="text-[10px] font-mono text-zinc-500 mt-2 uppercase tracking-tight opacity-70">VID:{p.getInfo().usbVendorId?.toString(16).padStart(4,'0') || '0000'} &nbsp; PID:{p.getInfo().usbProductId?.toString(16).padStart(4,'0') || '0000'}</div>
+                                            <div className={`text-[11px] font-black ${isDark ? 'group-hover:text-emerald-400' : 'text-slate-700 group-hover:text-purple-600'} transition-colors uppercase tracking-tighter leading-none`}>Endpoint#{i+1}</div>
+                                            <div className={`text-[10px] font-mono ${isDark ? 'text-zinc-500' : 'text-slate-400'} mt-2 uppercase tracking-tight opacity-70`}>VID:{p.getInfo().usbVendorId?.toString(16).padStart(4,'0') || '0000'} &nbsp; PID:{p.getInfo().usbProductId?.toString(16).padStart(4,'0') || '0000'}</div>
                                         </div>
                                     </div>
-                                    <ChevronRight size={20} className="text-zinc-800 group-hover:text-emerald-400 transition-all group-hover:translate-x-2" />
+                                    <ChevronRight size={20} className={`${isDark ? 'text-zinc-800 group-hover:text-emerald-400' : 'text-slate-300 group-hover:text-purple-500'} transition-all group-hover:translate-x-2`} />
                                 </button>
                             ))
                         )}
                     </div>
                 </div>
 
-                <div className="p-8 bg-[#0a0a0c] border-t border-white/10">
+                <div className={`p-8 ${isDark ? 'bg-[#0a0a0c] border-white/10' : 'bg-slate-50 border-slate-100'} border-t`}>
                     <button
                       onClick={() => {
                         navigator.serial.requestPort()
@@ -759,7 +809,7 @@ export default function App() {
                           })
                           .catch(() => {});
                       }}
-                      className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[1.5rem] text-[11px] font-black tracking-[0.4em] transition-all shadow-2xl shadow-emerald-900/40 flex items-center justify-center gap-4 hover:scale-[1.01] active:scale-98"
+                      className={`w-full py-5 bg-gradient-to-r ${t.btnPrimary} ${t.btnPrimaryHover} text-white rounded-[1.5rem] text-[11px] font-black tracking-[0.4em] transition-all shadow-2xl ${isDark ? 'shadow-emerald-900/40' : 'shadow-purple-500/30'} flex items-center justify-center gap-4 hover:scale-[1.01] active:scale-98`}
                     >
                         <Search size={20} /> SCAN FOR HARDWARE
                     </button>
@@ -771,8 +821,8 @@ export default function App() {
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 3px; height: 3px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.08); border-radius: 10px; border: 1px solid transparent; background-clip: padding-box; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.25); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: ${isDark ? 'rgba(16, 185, 129, 0.08)' : 'rgba(139, 92, 246, 0.15)'}; border-radius: 10px; border: 1px solid transparent; background-clip: padding-box; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: ${isDark ? 'rgba(16, 185, 129, 0.25)' : 'rgba(139, 92, 246, 0.35)'}; }
       `}</style>
     </div>
   );
